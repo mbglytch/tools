@@ -72,14 +72,6 @@ class MailChimpClient extends RestClient
 Et un exemple d'utilisation :
 
 ```
-/**
- * @var MailChimpClient
- */
-protected $client;
-```
-```
-$this->client = new MailChimpClient();
-```
-```
-return $this->client->post($this->client->getEndpointUsers(), json_encode($data));
+$client = new MailChimpClient();
+$client->post($client->getEndpointUsers(), json_encode($data));
 ```
