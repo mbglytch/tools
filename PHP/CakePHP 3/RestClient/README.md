@@ -81,22 +81,5 @@ protected $client;
 $this->client = new MailChimpClient();
 ```
 ```
-/**
- * Add a subscriber to MailChimp
- *
- * @param string $id User id
- * @return bool|string
- */
-public function addSubscriber($id) {
-    $user = $this->Users->get($id);
-    $data = [
-      'email_address' => $user->email,
-      'status' => 'subscribed',
-      'merge_fields' => [
-        'FNAME' => $user->first_name,
-        'LNAME' => $user->last_name,
-      ]
-    ];
-    return $this->client->post($this->client->getEndpointUsers(), json_encode($data));
-}
+return $this->client->post($this->client->getEndpointUsers(), json_encode($data));
 ```
