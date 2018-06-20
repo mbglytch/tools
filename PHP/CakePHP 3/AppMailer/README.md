@@ -1,4 +1,4 @@
-# \App\Mailer\Email Class for CakePHP
+# Email Class for CakePHP
 
 ## Installation
 
