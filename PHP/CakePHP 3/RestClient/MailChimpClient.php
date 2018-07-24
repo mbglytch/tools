@@ -15,7 +15,7 @@ class MailChimpClient extends RestClient
     {
         $config += [
             'debug' => Configure::read('debug'),
-            'auth' => ['username' => 'LACREUSE', 'password' => Configure::read('MailChimp.apiKey')],
+            'auth' => ['username' => 'USERNAME', 'password' => Configure::read('MailChimp.apiKey')],
             'url' => sprintf("https://%s.api.mailchimp.com/%s/",
                 Configure::read('MailChimp.dc'),
                 Configure::read('MailChimp.version')
@@ -48,9 +48,9 @@ class MailChimpClient extends RestClient
     /**
      * @inheritdoc
      */
-    protected function _connect($url = null, $method = 'get', $options = null)
+    protected function connect($url = null, $method = 'get', $options = null)
     {
-        $connect = parent::_connect($url, $method, $options);
-        return $connect ? json_decode($connect) : $connect;
+        $connect = parent::connect($url, $method, $options);
+        return $connect->isOk() ? json_decode($connect->getBody()) : $connect;
     }
 }
