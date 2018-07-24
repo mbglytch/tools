@@ -1,0 +1,141 @@
+# HTPassword
+AuthName "Private"
+AuthType Basic
+AuthUserFile "/home/preprod/public_html/.htpasswd"
+SetEnvIf Request_URI "/.well-known/acme-challenge" acme-challenge
+<RequireAny>
+  Require valid-user
+  Require env acme-challenge
+  Require ip 37.97.69.9
+  Require ip 37.97.70.4
+  Require ip 78.224.136.37
+</RequireAny>
+
+# Rewrite
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+
+    # Let's Encrypt
+    RewriteRule ^(\.well-known/.*)$ $1 [L]
+
+    # Maintenance
+    #RewriteCond %{REQUEST_URI} !maintenance\.html
+    #RewriteRule ^(.*)$ /maintenance.html [L,R=302]
+
+    # Signatures et Interweb vers CDN
+    RewriteRule ^((signatures|Interweb)/.*)$ https://cdn.anaafa.fr%{REQUEST_URI} [L]
+
+    # HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteCond %{REMOTE_ADDR} !^127\.0\.0\.1$
+    RewriteCond %{REMOTE_ADDR} !^192\.168\.0\.
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+  
+    # Redirect to www
+    RewriteCond %{HTTP_HOST} !^www\. [NC]
+    RewriteCond %{REMOTE_ADDR} !^127\.0\.0\.1$
+    RewriteCond %{REMOTE_ADDR} !^192\.168\.0\.
+    RewriteCond %{HTTP_HOST} !^preprod\.anaafa\.fr [NC]
+    RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [QSA,L,R=301]
+
+    # Old URL
+    RewriteCond %{THE_REQUEST} index\.php\?option=com_content&view=article&id=673
+    RewriteRule (.*) /extranet/users/login [L,QSD,R=301]
+    RewriteCond %{THE_REQUEST} index\.php\?option=com_contact&view=contact&id=1&Itemid=17
+    RewriteRule (.*) /28/contact-anaafa [L,QSD,R=301]
+    RewriteCond %{THE_REQUEST} index\.php\?option=com_content&view=article&id=1038&Itemid=8
+    RewriteRule (.*) /2/jeunes-avocats [L,QSD,R=301]
+    RewriteCond %{THE_REQUEST} index\.php\?option=com_content&view=article&id=4&Itemid=3
+    RewriteRule (.*) /11/association-nationale-d-assistance-administrative-et-fiscale-des-avocats [L,QSD,R=301]
+    RewriteCond %{THE_REQUEST} index\.php\?option=com_content&view=article&id=1156&Itemid=3
+    RewriteRule (.*) /22/tarifs [L,QSD,R=301]
+    RewriteCond %{THE_REQUEST} index\.php\?option=com_content&view=article&id=34&Itemid=4
+    RewriteRule (.*) /15/comptavocat [L,QSD,R=301]
+    RewriteCond %{THE_REQUEST} index\.php\?option=
+    RewriteRule (.*) / [L,QSD,R=301]
+    
+    # CakePHP
+    RewriteRule ^$ webroot/ [L]
+    RewriteRule (.*) webroot/$1 [L]
+</IfModule>
+
+# MIME
+<IfModule mod_mime.c>
+    AddEncoding gzip .gz
+</IfModule>
+
+# Headers
+<IfModule mod_headers.c>
+    Header set X-UA-Compatible "IE=edge"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Content-Type-Options "nosniff"
+    # conflict with cache rules
+    # Header set Cache-Control "no-store, no-cache, must-revalidate, private, no-transform"
+
+    # IE bug: can't render fonts if HTTPS + Pragma = no-cache
+    <FilesMatch "(?<!\.eot|\.woff)$">
+        Header set Pragma "no-cache"
+    </FilesMatch>
+
+    Header set X-Frame-Options SAMEORIGIN
+    # conflict with remote ressources, to tune for inline scripts
+    # Header set Content-Security-Policy "script-src 'self'; object-src 'self'"
+    # In vhost config
+    # Header always set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    Header unset ETag
+    FileETag None
+    RequestHeader unset Proxy
+</IfModule>
+
+# Cache
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 week"
+
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType text/xml "access plus 0 seconds"
+    ExpiresByType application/xml "access plus 0 seconds"
+    ExpiresByType application/json "access plus 0 seconds"
+    ExpiresByType application/pdf "access plus 0 seconds"
+
+    ExpiresByType image/vnd.microsoft.icon "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+
+    ExpiresByType audio/ogg "access plus 1 month"
+    ExpiresByType image/bmp "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType video/mp4 "access plus 1 month"
+    ExpiresByType video/ogg "access plus 1 month"
+    ExpiresByType video/webm "access plus 1 month"
+    ExpiresByType application/vnd.ms-fontobject "access plus 1 month"
+    ExpiresByType font/eot "access plus 1 month"
+    ExpiresByType font/opentype "access plus 1 month"
+    ExpiresByType application/x-font-ttf "access plus 1 month"
+    ExpiresByType application/font-woff "access plus 1 month"
+    ExpiresByType application/x-font-woff "access plus 1 month"
+    ExpiresByType font/woff "access plus 1 month"
+    ExpiresByType application/font-woff2 "access plus 1 month"
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml
+</IfModule>
+
+# Minify
+<IfModule mod_headers.c>
+    <FilesMatch "\.css\.gz$">
+        Header set Content-Type "text/css"
+    </FilesMatch>
+    <FilesMatch "\.js\.gz$">
+        Header set Content-Type "text/javascript"
+    </FilesMatch>
+</IfModule>
